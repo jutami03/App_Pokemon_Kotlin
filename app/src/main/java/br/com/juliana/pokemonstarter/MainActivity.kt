@@ -1,32 +1,42 @@
 package br.com.juliana.pokemonstarter
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.collection.emptyLongSet
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,19 +67,82 @@ val starters = listOf(
 fun PokemonStarterScreen(modifier: Modifier = Modifier) {
     var pokemonSelected by remember { mutableStateOf(starters.first()) }
 
+    val config = LocalConfiguration.current
+    val isPortrait = config.orientation == Configuration.ORIENTATION_PORTRAIT
+
+    if (isPortrait) {
+        PokemonStarterScreenPortrait(
+            modifier = modifier,
+            pokemonSelected = pokemonSelected,
+            onSelected = { pokemonSelected = it }
+        )
+    } else {
+        PokemonStarterScreenLandscape(
+            modifier = modifier,
+            pokemonSelected = pokemonSelected,
+            onSelected = { pokemonSelected = it }
+        )
+    }
+}
+
+@Composable
+fun PokemonStarterScreenPortrait(
+    modifier: Modifier = Modifier,
+    pokemonSelected: Pokemon,
+    onSelected: (Pokemon) -> Unit
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        PokeHeader("Escolha seu Pokemon inicial")
-
+        PokeHeader("Escolha seu Pokémon inicial")
+        Spacer(modifier = Modifier.weight(1f))
         PokeCard(pokemonSelected)
+        Spacer(modifier = Modifier.weight(1f))
+        PokemonOptionList(
+            pokemons = starters,
+            pokemonSelected = pokemonSelected,
+            onSelected = onSelected,
+        )
 
-        PokemonOptionList(pokemons = starters, pokemonSelected = pokemonSelected) {
-            pokemonSelected = it
+    }
+
+}
+
+@Composable
+fun PokemonStarterScreenLandscape(
+    modifier: Modifier = Modifier,
+    pokemonSelected: Pokemon,
+    onSelected: (Pokemon) -> Unit){
+    Row(modifier = modifier.fillMaxSize().padding(16.dp,),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        //Esquerda: Pokémon selecionado
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            PokeCard(pokemon = pokemonSelected)
+        }
+
+        //Direita: opções
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            Column {
+                PokeHeader("Escolha seu Pokémon inicial")
+                Spacer(modifier = Modifier.height(32.dp))
+                PokemonOptionList(
+                    pokemons = starters,
+                    pokemonSelected = pokemonSelected,
+                    onSelected = onSelected
+                )
+            }
         }
     }
 }
